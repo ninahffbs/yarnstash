@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: yarnstash-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-yarnstash}
+      POSTGRES_USER: ${POSTGRES_USER:-yarnstash}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yarnstash}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - yarnstash-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yarnstash} -d ${POSTGRES_DB:-yarnstash}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  yarnstash-data:
