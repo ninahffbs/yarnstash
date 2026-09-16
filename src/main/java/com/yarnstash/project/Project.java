@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "project")
@@ -16,7 +18,7 @@ public class Project {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @Column(nullable = false, length = 20)
     private ProjectStatus status;
 
     @Column(precision = 4, scale = 2)
@@ -28,6 +30,9 @@ public class Project {
     private LocalDate startedOn;
 
     private LocalDate finishedOn;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectYarn> allocations = new ArrayList<>();
 
     public Project() {
     }
@@ -96,5 +101,19 @@ public class Project {
 
     public void setFinishedOn(LocalDate finishedOn) {
         this.finishedOn = finishedOn;
+    }
+
+    public List<ProjectYarn> getAllocations() {
+        return allocations;
+    }
+
+    public void addAllocation(ProjectYarn allocation) {
+        allocations.add(allocation);
+        allocation.setProject(this);
+    }
+
+    public void removeAllocation(ProjectYarn allocation) {
+        allocations.remove(allocation);
+        allocation.setProject(null);
     }
 }
