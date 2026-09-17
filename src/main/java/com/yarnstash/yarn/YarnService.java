@@ -2,8 +2,10 @@ package com.yarnstash.yarn;
 
 import com.yarnstash.project.ProjectYarnRepository;
 import com.yarnstash.project.YarnAllocationTotal;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -62,6 +64,9 @@ public class YarnService {
     public boolean delete(Long id) {
         if(!yarnRepository.existsById(id)) {
             return false;
+        }
+        if(projectYarnRepository.existsByYarnId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "yarn %d is allocated to one or more projects and therefore cannot be deleted".formatted(id));
         }
         yarnRepository.deleteById(id);
         return true;

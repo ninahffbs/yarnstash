@@ -2,6 +2,7 @@ package com.yarnstash.project;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,5 +30,18 @@ public class AllocationController {
     @GetMapping("/yarns/{yarnId}/projects")
     public List<YarnUsageResponse> projectsForYarn(@PathVariable Long yarnId) {
         return allocationService.findProjectsForYarn(yarnId);
+    }
+
+    @PutMapping("/projects/{projectId}/yarns/{yarnId}")
+    public AllocationResponse amend(@PathVariable Long projectId, @PathVariable Long yarnId, @Valid @RequestBody AllocationUpdateRequest request) {
+        return allocationService.amend(projectId, yarnId, request);
+    }
+
+    @DeleteMapping("/projects/{projectId}/yarns/{yarnId}")
+    public ResponseEntity<Void> remove(@PathVariable Long projectId, @PathVariable Long yarnId) {
+        if(allocationService.remove(projectId, yarnId)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

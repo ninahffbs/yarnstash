@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,14 +34,50 @@ public class AllocationService {
     public AllocationResponse allocate(Long projectId, AllocationRequest request) {
         Project project = requireProject(projectId);
         Yarn yarn = requireYarn(request.yarnId());
-
         projectYarnRepository.findByProjectIdAndYarnId(projectId, yarn.getId())
                 .ifPresent(existing -> {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Yarn %d is already allocated to project %d".formatted(yarn.getId(), projectId));
                 });
         ProjectYarn allocation = new ProjectYarn(project, yarn, request.yardsUsed());
         project.addAllocation(allocation);
+
+        requireAvailableYardage(yarn, projectId, request.yardsUsed());
         return AllocationResponse.from(projectYarnRepository.save(allocation));
+    }
+
+    @Transactional
+    public AllocationResponse amend(Long projectId, Long yarnId, AllocationUpdateRequest request) {
+        requireProject(projectId);
+        Yarn yarn = requireYarn(yarnId);
+
+        ProjectYarn allocation = projectYarnRepository.findByProjectIdAndYarnId(projectId, yarnId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "yarn %d is not allocated to project %d".formatted(yarnId, projectId)));
+
+        requireAvailableYardage(yarn, projectId, request.yardsUsed());
+        allocation.setYardsUsed(request.yardsUsed());
+        return AllocationResponse.from(allocation);
+    }
+
+    @Transactional
+    public boolean remove(Long projectId, Long yarnId) {
+        requireProject(projectId);
+
+        Optional<ProjectYarn> found = projectYarnRepository.findByProjectIdAndYarnId(projectId, yarnId);
+        if(found.isEmpty()) {
+            return false;
+        }
+
+        projectYarnRepository.delete(found.get());
+        return true;
+    }
+
+    private void requireAvailableYardage(Yarn yarn, Long projectId, int requestedYards) {
+        int allocatedElsewhere = projectYarnRepository.sumYardsUsedForYarnExcludingProject(yarn.getId(), projectId);
+        int available = yarn.getTotalYards() - allocatedElsewhere;
+
+        if(requestedYards > available) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "not enough yarn: requested %d yards of yarn %d but only %d available".formatted(requestedYards, yarn.getId(), available));
+        }
     }
 
     private Project requireProject(Long projectId) {

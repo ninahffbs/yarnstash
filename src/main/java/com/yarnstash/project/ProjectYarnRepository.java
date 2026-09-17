@@ -29,4 +29,15 @@ public interface ProjectYarnRepository extends JpaRepository<ProjectYarn, Long> 
             group by py.yarn.id
             """)
     List<YarnAllocationTotal> sumYardsUsedByYarn();
+
+    boolean existsByYarnId(Long yarnId);
+
+    @Query("""
+            select coalesce(sum(py.yardsUsed), 0)
+            from ProjectYarn py
+            where py.yarn.id = :yarnId
+              and py.project.id <> :projectId
+              and py.project.status <> com.yarnstash.project.ProjectStatus.FROGGED
+            """)
+    int sumYardsUsedForYarnExcludingProject(@Param("yarnId") Long yarnId, @Param("projectId") Long projectId);
 }
