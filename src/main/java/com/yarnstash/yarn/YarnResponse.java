@@ -1,5 +1,7 @@
 package com.yarnstash.yarn;
 
+import java.time.LocalDate;
+
 public record YarnResponse(
         Long id,
         String brand,
@@ -8,6 +10,7 @@ public record YarnResponse(
         YarnWeight weight,
         int skeins,
         int yardsPerSkein,
+        LocalDate purchasedOn,
         int totalYards,
         int allocatedYards,
         int availableYards) {
@@ -20,6 +23,7 @@ public record YarnResponse(
                 yarn.getWeight(),
                 yarn.getSkeins(),
                 yarn.getYardsPerSkein(),
+                yarn.getPurchasedOn(),
                 yarn.getTotalYards(),
                 allocatedYards,
                 yarn.getTotalYards() - allocatedYards);

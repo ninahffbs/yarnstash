@@ -1,9 +1,8 @@
 package com.yarnstash.yarn;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
+import java.time.LocalDate;
 
 public record YarnRequest(
 
@@ -25,8 +24,12 @@ public record YarnRequest(
         int skeins,
 
         @Min(value = 1, message = "yardsPerSkein must be at least 1")
-        int yardsPerSkein) {
+        int yardsPerSkein,
+
+        @PastOrPresent(message = "purchase date cannot be in the future")
+        LocalDate purchasedOn) {
+
     public Yarn toEntity() {
-        return new Yarn(null, brand, colorway, fiber, weight, skeins, yardsPerSkein);
+        return new Yarn(null, brand, colorway, fiber, weight, skeins, yardsPerSkein, purchasedOn);
     }
 }

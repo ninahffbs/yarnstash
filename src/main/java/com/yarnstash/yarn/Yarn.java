@@ -1,6 +1,7 @@
 package com.yarnstash.yarn;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "yarn")
@@ -16,7 +17,7 @@ public class Yarn {
     @Column(nullable = false, length = 120)
     private String colorway;
 
-    @Column(nullable = false, length = 120)
+    @Column(length = 200)
     private String fiber;
 
     @Enumerated(EnumType.STRING)
@@ -29,10 +30,12 @@ public class Yarn {
     @Column(nullable = false)
     private int yardsPerSkein;
 
+    private LocalDate purchasedOn;
+
     public Yarn() {
     }
 
-    public Yarn(Long id, String brand, String colorway, String fiber, YarnWeight weight, int skeins, int yardsPerSkein) {
+    public Yarn(Long id, String brand, String colorway, String fiber, YarnWeight weight, int skeins, int yardsPerSkein, LocalDate purchasedOn) {
         this.id = id;
         this.brand = brand;
         this.colorway = colorway;
@@ -40,6 +43,7 @@ public class Yarn {
         this.weight = weight;
         this.skeins = skeins;
         this.yardsPerSkein = yardsPerSkein;
+        this.purchasedOn = purchasedOn;
     }
 
     public int getTotalYards() {
@@ -100,5 +104,13 @@ public class Yarn {
 
     public void setYardsPerSkein(int yardsPerSkein) {
         this.yardsPerSkein = yardsPerSkein;
+    }
+
+    public LocalDate getPurchasedOn() {
+        return purchasedOn;
+    }
+
+    public void setPurchasedOn(LocalDate purchasedOn) {
+        this.purchasedOn = purchasedOn;
     }
 }
