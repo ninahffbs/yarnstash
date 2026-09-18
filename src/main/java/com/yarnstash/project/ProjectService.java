@@ -1,5 +1,8 @@
 package com.yarnstash.project;
 
+import com.yarnstash.common.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +19,14 @@ public class ProjectService {
         this.projectRepository = projectRepository;
     }
 
-    public List<ProjectResponse> findAll() {
-        return projectRepository.findAll().stream()
-                .map(ProjectResponse::from)
-                .toList();
+    public PageResponse<ProjectResponse> search(ProjectStatus status, Pageable pageable) {
+        Page<Project> page = projectRepository.search(status, pageable);
+        return PageResponse.from(page.map(ProjectResponse::from));
     }
 
-    public Optional<ProjectResponse> findById(Long id) {
-        return projectRepository.findById(id)
-                .map(ProjectResponse::from);
+    public Optional<ProjectDetailResponse> findById(Long id) {
+        return projectRepository.findWithAllocationsById(id)
+                .map(ProjectDetailResponse::from);
     }
 
     @Transactional

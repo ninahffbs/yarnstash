@@ -1,9 +1,13 @@
 package com.yarnstash.project;
 
+import com.yarnstash.common.PageResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -17,12 +21,12 @@ public class ProjectController {
     }
 
     @GetMapping
-    public List<ProjectResponse> list() {
-        return projectService.findAll();
+    public PageResponse<ProjectResponse> list(@RequestParam(required = false) ProjectStatus status, @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return projectService.search(status, pageable);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectResponse> byId(@PathVariable Long id) {
+    public ResponseEntity<ProjectDetailResponse> byId(@PathVariable Long id) {
         return projectService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
