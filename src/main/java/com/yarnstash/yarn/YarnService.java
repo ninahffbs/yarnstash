@@ -1,13 +1,15 @@
 package com.yarnstash.yarn;
 
+import com.yarnstash.common.PageResponse;
 import com.yarnstash.project.ProjectYarnRepository;
 import com.yarnstash.project.YarnAllocationTotal;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,11 +25,15 @@ public class YarnService {
         this.projectYarnRepository = projectYarnRepository;
     }
 
-    public List<YarnResponse> findAll() {
+    public PageResponse<YarnResponse> search(YarnWeight weight, String fiber, Pageable pageable) {
+        Page<Yarn> page = yarnRepository.search(weight, fiber, pageable);
         Map<Long, Integer> allocated = allocatedYardsByYarn();
-        return yarnRepository.findAll().stream()
-                .map(yarn -> YarnResponse.from(yarn, allocated.getOrDefault(yarn.getId(), 0)))
-                .toList();
+
+        return PageResponse.from(page.map(yarn -> YarnResponse.from(yarn, allocated.getOrDefault(yarn.getId(), 0))));
+    }
+
+    public long count() {
+        return yarnRepository.count();
     }
 
     public Optional<YarnResponse> findById(Long id) {
