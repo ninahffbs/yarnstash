@@ -1,17 +1,16 @@
 package com.yarnstash.yarn;
 
+import com.yarnstash.common.ConflictException;
+import com.yarnstash.common.NotFoundException;
 import com.yarnstash.common.PageResponse;
 import com.yarnstash.project.ProjectYarnRepository;
 import com.yarnstash.project.YarnAllocationTotal;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,19 +25,21 @@ public class YarnService {
     }
 
     public PageResponse<YarnResponse> search(YarnWeight weight, String fiber, Pageable pageable) {
-        Page<Yarn> page = yarnRepository.search(weight, fiber, pageable);
+        String fiberFilter = (fiber == null || fiber.isBlank()) ? null : fiber.trim();
+
+        Page<Yarn> page = yarnRepository.search(weight, fiberFilter, pageable);
         Map<Long, Integer> allocated = allocatedYardsByYarn();
 
-        return PageResponse.from(page.map(yarn -> YarnResponse.from(yarn, allocated.getOrDefault(yarn.getId(), 0))));
+        return PageResponse.from(
+                page.map(yarn -> YarnResponse.from(yarn, allocated.getOrDefault(yarn.getId(), 0))));
     }
 
-    public long count() {
-        return yarnRepository.count();
+    public StashStats stats() {
+        return yarnRepository.stats();
     }
 
-    public Optional<YarnResponse> findById(Long id) {
-        return yarnRepository.findById(id)
-                .map(yarn -> YarnResponse.from(yarn, allocatedYardsFor(id)));
+    public YarnResponse findById(Long id) {
+        return YarnResponse.from(getOrThrow(id), allocatedYardsFor(id));
     }
 
     @Transactional
@@ -48,13 +49,8 @@ public class YarnService {
     }
 
     @Transactional
-    public Optional<YarnResponse> update(Long id, YarnRequest request) {
-        Optional<Yarn> found = yarnRepository.findById(id);
-        if(found.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Yarn yarn = found.get();
+    public YarnResponse update(Long id, YarnRequest request) {
+        Yarn yarn = getOrThrow(id);
 
         yarn.setBrand(request.brand());
         yarn.setColorway(request.colorway());
@@ -62,26 +58,26 @@ public class YarnService {
         yarn.setFiber(request.fiber());
         yarn.setSkeins(request.skeins());
         yarn.setYardsPerSkein(request.yardsPerSkein());
+        yarn.setPurchasedOn(request.purchasedOn());
 
-        return Optional.of(YarnResponse.from(yarn, allocatedYardsFor(id)));
+        return YarnResponse.from(yarn, allocatedYardsFor(id));
     }
 
     @Transactional
-    public boolean delete(Long id) {
-        if(!yarnRepository.existsById(id)) {
-            return false;
+    public void delete(Long id) {
+        Yarn yarn = getOrThrow(id);
+
+        if (projectYarnRepository.existsByYarnId(id)) {
+            throw new ConflictException(
+                    "Yarn %d is allocated to one or more projects and cannot be deleted".formatted(id));
         }
-        if(projectYarnRepository.existsByYarnId(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "yarn %d is allocated to one or more projects and therefore cannot be deleted".formatted(id));
-        }
-        yarnRepository.deleteById(id);
-        return true;
+
+        yarnRepository.delete(yarn);
     }
 
-    public int totalYardsInStash() {
-        return yarnRepository.findAll().stream()
-                .mapToInt(Yarn::getTotalYards)
-                .sum();
+    private Yarn getOrThrow(Long id) {
+        return yarnRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Yarn %d not found".formatted(id)));
     }
 
     private int allocatedYardsFor(Long yarnId) {
@@ -90,6 +86,7 @@ public class YarnService {
 
     private Map<Long, Integer> allocatedYardsByYarn() {
         return projectYarnRepository.sumYardsUsedByYarn().stream()
-                .collect(Collectors.toMap(YarnAllocationTotal::yarnId, total -> (int) total.totalYardsUsed()));
+                .collect(Collectors.toMap(YarnAllocationTotal::yarnId,
+                        total -> (int) total.totalYardsUsed()));
     }
 }

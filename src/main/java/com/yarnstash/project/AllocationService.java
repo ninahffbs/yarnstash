@@ -1,14 +1,13 @@
 package com.yarnstash.project;
 
+import com.yarnstash.common.ConflictException;
+import com.yarnstash.common.NotFoundException;
 import com.yarnstash.yarn.Yarn;
 import com.yarnstash.yarn.YarnRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -17,7 +16,9 @@ public class AllocationService {
     private final YarnRepository yarnRepository;
     private final ProjectYarnRepository projectYarnRepository;
 
-    public AllocationService(ProjectRepository projectRepository, YarnRepository yarnRepository, ProjectYarnRepository projectYarnRepository) {
+    public AllocationService(ProjectRepository projectRepository,
+                             YarnRepository yarnRepository,
+                             ProjectYarnRepository projectYarnRepository) {
         this.projectRepository = projectRepository;
         this.yarnRepository = yarnRepository;
         this.projectYarnRepository = projectYarnRepository;
@@ -30,18 +31,30 @@ public class AllocationService {
                 .toList();
     }
 
+    public List<YarnUsageResponse> findProjectsForYarn(Long yarnId) {
+        requireYarn(yarnId);
+        return projectYarnRepository.findByYarnId(yarnId).stream()
+                .map(YarnUsageResponse::from)
+                .toList();
+    }
+
     @Transactional
     public AllocationResponse allocate(Long projectId, AllocationRequest request) {
         Project project = requireProject(projectId);
         Yarn yarn = requireYarn(request.yarnId());
+
         projectYarnRepository.findByProjectIdAndYarnId(projectId, yarn.getId())
                 .ifPresent(existing -> {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Yarn %d is already allocated to project %d".formatted(yarn.getId(), projectId));
+                    throw new ConflictException(
+                            "Yarn %d is already allocated to project %d - amend the existing allocation instead"
+                                    .formatted(yarn.getId(), projectId));
                 });
+
+        requireAvailableYardage(yarn, projectId, request.yardsUsed());
+
         ProjectYarn allocation = new ProjectYarn(project, yarn, request.yardsUsed());
         project.addAllocation(allocation);
 
-        requireAvailableYardage(yarn, projectId, request.yardsUsed());
         return AllocationResponse.from(projectYarnRepository.save(allocation));
     }
 
@@ -50,50 +63,51 @@ public class AllocationService {
         requireProject(projectId);
         Yarn yarn = requireYarn(yarnId);
 
-        ProjectYarn allocation = projectYarnRepository.findByProjectIdAndYarnId(projectId, yarnId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "yarn %d is not allocated to project %d".formatted(yarnId, projectId)));
+        ProjectYarn allocation = requireAllocation(projectId, yarnId);
 
         requireAvailableYardage(yarn, projectId, request.yardsUsed());
         allocation.setYardsUsed(request.yardsUsed());
+
         return AllocationResponse.from(allocation);
     }
 
     @Transactional
-    public boolean remove(Long projectId, Long yarnId) {
+    public void remove(Long projectId, Long yarnId) {
         requireProject(projectId);
-
-        Optional<ProjectYarn> found = projectYarnRepository.findByProjectIdAndYarnId(projectId, yarnId);
-        if(found.isEmpty()) {
-            return false;
-        }
-
-        projectYarnRepository.delete(found.get());
-        return true;
+        projectYarnRepository.delete(requireAllocation(projectId, yarnId));
     }
 
+    /**
+     * Compares the requested yardage against what is available once every other
+     * project's claim on this yarn is accounted for. The current project is
+     * excluded so that amending an existing allocation is not judged against
+     * its own yardage.
+     */
     private void requireAvailableYardage(Yarn yarn, Long projectId, int requestedYards) {
-        int allocatedElsewhere = projectYarnRepository.sumYardsUsedForYarnExcludingProject(yarn.getId(), projectId);
+        int allocatedElsewhere =
+                projectYarnRepository.sumYardsUsedForYarnExcludingProject(yarn.getId(), projectId);
         int available = yarn.getTotalYards() - allocatedElsewhere;
 
-        if(requestedYards > available) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "not enough yarn: requested %d yards of yarn %d but only %d available".formatted(requestedYards, yarn.getId(), available));
+        if (requestedYards > available) {
+            throw new ConflictException(
+                    "Not enough yarn: requested %d yards of yarn %d but only %d available"
+                            .formatted(requestedYards, yarn.getId(), available));
         }
+    }
+
+    private ProjectYarn requireAllocation(Long projectId, Long yarnId) {
+        return projectYarnRepository.findByProjectIdAndYarnId(projectId, yarnId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Yarn %d is not allocated to project %d".formatted(yarnId, projectId)));
     }
 
     private Project requireProject(Long projectId) {
         return projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "project %d not found".formatted(projectId)));
+                .orElseThrow(() -> new NotFoundException("Project %d not found".formatted(projectId)));
     }
 
     private Yarn requireYarn(Long yarnId) {
         return yarnRepository.findById(yarnId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "yarn %d not found".formatted(yarnId)));
-    }
-
-    public List<YarnUsageResponse> findProjectsForYarn(Long yarnId) {
-        requireYarn(yarnId);
-        return projectYarnRepository.findByYarnId(yarnId).stream()
-                .map(YarnUsageResponse::from)
-                .toList();
+                .orElseThrow(() -> new NotFoundException("Yarn %d not found".formatted(yarnId)));
     }
 }

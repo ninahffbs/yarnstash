@@ -1,14 +1,13 @@
 package com.yarnstash.project;
 
+import com.yarnstash.common.NotFoundException;
 import com.yarnstash.common.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,9 +23,10 @@ public class ProjectService {
         return PageResponse.from(page.map(ProjectResponse::from));
     }
 
-    public Optional<ProjectDetailResponse> findById(Long id) {
+    public ProjectDetailResponse findById(Long id) {
         return projectRepository.findWithAllocationsById(id)
-                .map(ProjectDetailResponse::from);
+                .map(ProjectDetailResponse::from)
+                .orElseThrow(() -> new NotFoundException("Project %d not found".formatted(id)));
     }
 
     @Transactional
@@ -38,13 +38,9 @@ public class ProjectService {
     }
 
     @Transactional
-    public Optional<ProjectResponse> update(Long id, ProjectRequest request) {
-        Optional<Project> found = projectRepository.findById(id);
-        if(found.isEmpty()) {
-            return Optional.empty();
-        }
+    public ProjectResponse update(Long id, ProjectRequest request) {
+        Project project = getOrThrow(id);
 
-        Project project = found.get();
         project.setName(request.name());
         project.setStatus(request.status());
         project.setHookSize(request.hookSize());
@@ -54,28 +50,29 @@ public class ProjectService {
 
         applyStatusRules(project);
 
-        return Optional.of(ProjectResponse.from(project));
+        return ProjectResponse.from(project);
     }
 
     @Transactional
-    public boolean delete(Long id) {
-        if(!projectRepository.existsById(id)) {
-            return false;
-        }
-        projectRepository.deleteById(id);
-        return true;
+    public void delete(Long id) {
+        projectRepository.delete(getOrThrow(id));
+    }
+
+    private Project getOrThrow(Long id) {
+        return projectRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Project %d not found".formatted(id)));
     }
 
     private void applyStatusRules(Project project) {
-        if(project.getStatus() == null) {
+        if (project.getStatus() == null) {
             project.setStatus(ProjectStatus.PLANNED);
         }
-        if(project.getStatus() == ProjectStatus.FINISHED) {
-            if(project.getFinishedOn() == null) {
+
+        if (project.getStatus() == ProjectStatus.FINISHED) {
+            if (project.getFinishedOn() == null) {
                 project.setFinishedOn(LocalDate.now());
             }
-        }
-        else {
+        } else {
             project.setFinishedOn(null);
         }
     }

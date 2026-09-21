@@ -7,13 +7,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface YarnRepository extends JpaRepository<Yarn, Long> {
+
     @Query("""
-              select y from Yarn y
-              where (:weight is null or y.weight = :weight)
-                and (cast(:fiber as string) is null
-                     or lower(y.fiber) like lower(concat('%', cast(:fiber as string), '%')))
-              """)
+            select y from Yarn y
+            where (:weight is null or y.weight = :weight)
+              and (cast(:fiber as string) is null
+                   or lower(y.fiber) like lower(concat('%', cast(:fiber as string), '%')))
+            """)
     Page<Yarn> search(@Param("weight") YarnWeight weight,
                       @Param("fiber") String fiber,
                       Pageable pageable);
+
+    @Query("""
+            select new com.yarnstash.yarn.StashStats(
+                       count(y),
+                       coalesce(sum(y.skeins * y.yardsPerSkein), 0L))
+            from Yarn y
+            """)
+    StashStats stats();
 }
