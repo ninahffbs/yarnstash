@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yarnstash — design reference</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  /* Yarn weight is an ordered magnitude (lace -> super chunky), so it gets a
+     single-hue sequential ramp rather than eight unrelated categorical colours. */
+  .w-lace     { background:#f5f1ea; color:#57534e; }
+  .w-fing     { background:#e8dfd0; color:#57534e; }
+  .w-sport    { background:#d9cbb3; color:#44403c; }
+  .w-dk       { background:#c4b094; color:#292524; }
+  .w-worsted  { background:#a89275; color:#fafaf9; }
+  .w-aran     { background:#8a7358; color:#fafaf9; }
+  .w-chunky   { background:#6b573f; color:#fafaf9; }
+  .w-super    { background:#4a3b29; color:#fafaf9; }
+  .badge { display:inline-block; padding:1px 8px; border-radius:9999px;
+           font-size:11px; font-weight:600; letter-spacing:.02em; }
+  .screen-label { font: 600 11px/1 ui-sans-serif, system-ui; letter-spacing:.12em;
+                  text-transform:uppercase; color:#a8a29e; }
+</style>
+</head>
+
+<body class="bg-stone-100 text-stone-900 antialiased">
+<div class="mx-auto max-w-[1100px] px-6 py-10 space-y-16">
+
+  <header class="space-y-1">
+    <h1 class="text-2xl font-semibold">Yarnstash — design reference</h1>
+    <p class="text-sm text-stone-500">
+      Static mock-up. Not the app. Copy the markup and classes into React components.
+    </p>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════ TOKENS -->
+  <section class="space-y-4">
+    <p class="screen-label">Tokens</p>
+    <div class="rounded-lg border border-stone-200 bg-white p-6 space-y-6">
+
+      <div>
+        <p class="mb-2 text-xs font-semibold text-stone-500">Surfaces &amp; ink</p>
+        <div class="flex flex-wrap gap-3 text-xs">
+          <span class="rounded border border-stone-200 bg-stone-50 px-3 py-2">bg-stone-50 · page</span>
+          <span class="rounded border border-stone-200 bg-white px-3 py-2">white · cards</span>
+          <span class="rounded border border-stone-200 px-3 py-2">border-stone-200</span>
+          <span class="rounded bg-stone-900 px-3 py-2 text-white">stone-900 · headings</span>
+          <span class="rounded border border-stone-200 px-3 py-2 text-stone-500">stone-500 · secondary</span>
+        </div>
+      </div>
+
+      <div>
+        <p class="mb-2 text-xs font-semibold text-stone-500">Accent — actions only</p>
+        <div class="flex flex-wrap items-center gap-3">
+          <button class="rounded-md bg-[#8f4733] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#7a3c2b]">Primary</button>
+          <button class="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium hover:bg-stone-50">Secondary</button>
+          <button class="rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100">Ghost</button>
+          <button class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50">Destructive</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="mb-2 text-xs font-semibold text-stone-500">
+          Weight ramp — sequential, light → dark (weight is a magnitude, not an identity)
+        </p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="badge w-lace">Lace</span>
+          <span class="badge w-fing">Fingering</span>
+          <span class="badge w-sport">Sport</span>
+          <span class="badge w-dk">DK</span>
+          <span class="badge w-worsted">Worsted</span>
+          <span class="badge w-aran">Aran</span>
+          <span class="badge w-chunky">Chunky</span>
+          <span class="badge w-super">Super chunky</span>
+        </div>
+      </div>
+
+      <div>
+        <p class="mb-2 text-xs font-semibold text-stone-500">
+          Project status — neutral, with accent on the one you care about.
+          Deliberately <em>not</em> red/amber/green: “frogged” is not an error.
+        </p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="badge bg-stone-100 text-stone-600">Planned</span>
+          <span class="badge bg-[#8f4733]/12 text-[#8f4733]">In progress</span>
+          <span class="badge bg-stone-200 text-stone-700">Finished</span>
+          <span class="badge bg-stone-100 text-stone-400">Frogged</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ STASH -->
+  <section class="space-y-4">
+    <p class="screen-label">Screen 1 — Stash · /yarns</p>
+
+    <div class="overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+
+      <!-- app shell -->
+      <header class="border-b border-stone-200 bg-white">
+        <nav class="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4">
+          <span class="font-semibold">Yarnstash</span>
+          <a class="text-sm font-medium text-stone-900" href="#">Stash</a>
+          <a class="text-sm text-stone-500 hover:text-stone-900" href="#">Projects</a>
+        </nav>
+      </header>
+
+      <main class="mx-auto max-w-5xl px-6 py-8">
+
+        <div class="mb-6 flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Stash</h2>
+          <button class="rounded-md bg-[#8f4733] px-3 py-1.5 text-sm font-medium text-white">+ Add yarn</button>
+        </div>
+
+        <!-- stat tiles: single headline numbers, so a tile - not a chart -->
+        <div class="mb-6 grid grid-cols-3 gap-3">
+          <div class="rounded-lg border border-stone-200 bg-white p-4">
+            <p class="text-2xl font-semibold tabular-nums">12</p>
+            <p class="text-xs text-stone-500">yarns</p>
+          </div>
+          <div class="rounded-lg border border-stone-200 bg-white p-4">
+            <p class="text-2xl font-semibold tabular-nums">4,180</p>
+            <p class="text-xs text-stone-500">yards total</p>
+          </div>
+          <div class="rounded-lg border border-stone-200 bg-white p-4">
+            <p class="text-2xl font-semibold tabular-nums">2,940</p>
+            <p class="text-xs text-stone-500">yards available</p>
+          </div>
+        </div>
+
+        <!-- filters: one row, above the data -->
+        <div class="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-stone-200 bg-white p-3">
+          <label class="text-xs text-stone-500">
+            Weight
+            <select class="mt-1 block rounded-md border border-stone-300 px-2 py-1.5 text-sm text-stone-900">
+              <option>All</option><option>Lace</option><option>Fingering</option>
+              <option>Sport</option><option>DK</option><option selected>Worsted</option>
+              <option>Aran</option><option>Chunky</option><option>Super chunky</option>
+            </select>
+          </label>
+          <label class="text-xs text-stone-500">
+            Fiber
+            <input value="wool" class="mt-1 block w-44 rounded-md border border-stone-300 px-2 py-1.5 text-sm text-stone-900">
+          </label>
+          <label class="text-xs text-stone-500">
+            Sort
+            <select class="mt-1 block rounded-md border border-stone-300 px-2 py-1.5 text-sm text-stone-900">
+              <option>Brand A–Z</option><option>Most available</option><option>Recently purchased</option>
+            </select>
+          </label>
+          <button class="ml-auto rounded-md px-2 py-1.5 text-sm text-stone-500 hover:bg-stone-100">Clear</button>
+        </div>
+
+        <!-- table: the data is numeric and comparative, so rows beat cards -->
+        <div class="overflow-hidden rounded-lg border border-stone-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="border-b border-stone-200 bg-stone-50 text-left text-[11px] uppercase tracking-wide text-stone-500">
+              <tr>
+                <th class="px-4 py-2 font-semibold">Brand</th>
+                <th class="px-4 py-2 font-semibold">Colorway</th>
+                <th class="px-4 py-2 font-semibold">Weight</th>
+                <th class="px-4 py-2 text-right font-semibold">Skeins</th>
+                <th class="px-4 py-2 text-right font-semibold">Total</th>
+                <th class="px-4 py-2 text-right font-semibold">Available</th>
+                <th class="w-8"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-2.5 font-medium">Cascade 220</td>
+                <td class="px-4 py-2.5 text-stone-600">Heather Grey</td>
+                <td class="px-4 py-2.5"><span class="badge w-worsted">Worsted</span></td>
+                <td class="px-4 py-2.5 text-right tabular-nums">3</td>
+                <td class="px-4 py-2.5 text-right tabular-nums">660</td>
+                <td class="px-4 py-2.5 text-right tabular-nums font-medium">660</td>
+                <td class="px-2 text-stone-400">⋯</td>
+              </tr>
+              <tr class="bg-stone-50">
+                <td class="px-4 py-2.5 font-medium">Drops Nepal</td>
+                <td class="px-4 py-2.5 text-stone-600">Mustard</td>
+                <td class="px-4 py-2.5"><span class="badge w-aran">Aran</span></td>
+                <td class="px-4 py-2.5 text-right tabular-nums">4</td>
+                <td class="px-4 py-2.5 text-right tabular-nums">328</td>
+                <td class="px-4 py-2.5 text-right tabular-nums font-medium">128</td>
+                <td class="px-2 text-stone-500">⋯</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-2.5 font-medium">Katia Ingenua</td>
+                <td class="px-4 py-2.5 text-stone-600">Pale Rose</td>
+                <td class="px-4 py-2.5"><span class="badge w-chunky">Chunky</span></td>
+                <td class="px-4 py-2.5 text-right tabular-nums">5</td>
+                <td class="px-4 py-2.5 text-right tabular-nums">765</td>
+                <td class="px-4 py-2.5 text-right tabular-nums font-medium">765</td>
+                <td class="px-2 text-stone-400">⋯</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-2.5 font-medium">Malabrigo Rios</td>
+                <td class="px-4 py-2.5 text-stone-600">Teal Feather</td>
+                <td class="px-4 py-2.5"><span class="badge w-worsted">Worsted</span></td>
+                <td class="px-4 py-2.5 text-right tabular-nums">2</td>
+                <td class="px-4 py-2.5 text-right tabular-nums">420</td>
+                <td class="px-4 py-2.5 text-right tabular-nums font-medium">220</td>
+                <td class="px-2 text-stone-400">⋯</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-2.5 font-medium">Rowan Felted Tweed</td>
+                <td class="px-4 py-2.5 text-stone-600">Ancient</td>
+                <td class="px-4 py-2.5"><span class="badge w-dk">DK</span></td>
+                <td class="px-4 py-2.5 text-right tabular-nums">6</td>
+                <td class="px-4 py-2.5 text-right tabular-nums">1,146</td>
+                <td class="px-4 py-2.5 text-right tabular-nums font-medium">1,146</td>
+                <td class="px-2 text-stone-400">⋯</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-sm text-stone-500">
+          <span>Showing 1–5 of 12</span>
+          <div class="flex items-center gap-1">
+            <button class="rounded px-2 py-1 hover:bg-stone-100" disabled>‹ Prev</button>
+            <button class="rounded bg-stone-900 px-2.5 py-1 text-white">1</button>
+            <button class="rounded px-2.5 py-1 hover:bg-stone-100">2</button>
+            <button class="rounded px-2.5 py-1 hover:bg-stone-100">3</button>
+            <button class="rounded px-2 py-1 hover:bg-stone-100">Next ›</button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ PROJECT DETAIL -->
+  <section class="space-y-4">
+    <p class="screen-label">Screen 2 — Project detail · /projects/:id  ★ the page that matters</p>
+
+    <div class="rounded-lg border border-stone-200 bg-stone-50 p-6">
+      <div class="mx-auto max-w-3xl space-y-6">
+
+        <a class="text-sm text-stone-500 hover:text-stone-900" href="#">‹ Projects</a>
+
+        <div class="flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">Winter Beanie</h2>
+            <p class="mt-1 flex items-center gap-2 text-sm text-stone-500">
+              <span class="badge bg-[#8f4733]/12 text-[#8f4733]">In progress</span>
+              <span>· 4.5 mm hook · started 10 Sep 2026</span>
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button class="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium">Edit</button>
+            <button class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700">Delete</button>
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-stone-200 bg-white p-4">
+          <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-500">Notes</p>
+          <p class="text-sm text-stone-700">Went down a size for gauge. 12 rounds before the decrease.</p>
+        </div>
+
+        <!-- allocations -->
+        <div class="overflow-hidden rounded-lg border border-stone-200 bg-white">
+          <div class="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-4 py-2.5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Yarn used</p>
+            <p class="text-sm font-medium tabular-nums">240 yards total</p>
+          </div>
+          <ul class="divide-y divide-stone-100 text-sm">
+            <li class="flex items-center gap-3 px-4 py-3">
+              <span class="badge w-aran">Aran</span>
+              <span class="font-medium">Drops Nepal</span>
+              <span class="text-stone-500">Mustard</span>
+              <span class="ml-auto tabular-nums font-medium">200 yds</span>
+              <button class="rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-100">Edit</button>
+              <button class="rounded px-2 py-1 text-xs text-red-700 hover:bg-red-50">Remove</button>
+            </li>
+            <li class="flex items-center gap-3 px-4 py-3">
+              <span class="badge w-worsted">Worsted</span>
+              <span class="font-medium">Cascade 220</span>
+              <span class="text-stone-500">Heather Grey</span>
+              <span class="ml-auto tabular-nums font-medium">40 yds</span>
+              <button class="rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-100">Edit</button>
+              <button class="rounded px-2 py-1 text-xs text-red-700 hover:bg-red-50">Remove</button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- the allocation form, showing the 409 inline -->
+        <div class="rounded-lg border border-stone-200 bg-white p-4">
+          <p class="mb-3 text-sm font-semibold">Add yarn to this project</p>
+
+          <div class="grid gap-4 sm:grid-cols-[1fr_140px]">
+            <label class="text-xs text-stone-500">
+              Yarn
+              <select class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900">
+                <option selected>Malabrigo Rios · Teal Feather</option>
+                <option>Rowan Felted Tweed · Ancient</option>
+              </select>
+              <span class="mt-1 block text-stone-500">220 of 420 yards available</span>
+            </label>
+
+            <label class="text-xs text-stone-500">
+              Yards
+              <input value="250" class="mt-1 block w-full rounded-md border border-red-400 px-2 py-2 text-sm text-stone-900">
+              <span class="mt-1 block text-red-700">⚠ Only 220 yards available</span>
+            </label>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button class="rounded-md bg-[#8f4733] px-3 py-1.5 text-sm font-medium text-white">Add to project</button>
+          </div>
+
+          <p class="mt-3 border-t border-stone-100 pt-3 text-xs text-stone-400">
+            The hint under “Yarn” comes from availableYards on the yarn you already fetched.
+            The red message under “Yards” is the backend’s 409 text, rendered via
+            ApiError.fieldError(). No extra endpoint needed for either.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ YARN FORM -->
+  <section class="space-y-4">
+    <p class="screen-label">Screen 3 — Yarn form · /yarns/new · /yarns/:id/edit</p>
+
+    <div class="grid gap-4 lg:grid-cols-2">
+
+      <!-- clean -->
+      <div class="rounded-lg border border-stone-200 bg-stone-50 p-6">
+        <div class="mx-auto max-w-md space-y-4">
+          <a class="text-sm text-stone-500" href="#">‹ Stash</a>
+          <h2 class="text-xl font-semibold">Add yarn</h2>
+
+          <div class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 text-sm">
+            <label class="block text-xs text-stone-500">Brand *
+              <input value="Drops Nepal" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+            <label class="block text-xs text-stone-500">Colorway *
+              <input value="Mustard" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+            <label class="block text-xs text-stone-500">Fiber
+              <input value="65% wool, 35% alpaca" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+            <label class="block text-xs text-stone-500">Weight *
+              <select class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900">
+                <option selected>Aran</option><option>Worsted</option><option>DK</option>
+              </select></label>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block text-xs text-stone-500">Skeins *
+                <input value="4" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+              <label class="block text-xs text-stone-500">Yards per skein *
+                <input value="82" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+            </div>
+            <p class="text-xs text-stone-500">→ <span class="font-medium text-stone-700">328 yards total</span></p>
+
+            <label class="block text-xs text-stone-500">Purchased
+              <input value="2026-03-14" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button class="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium">Cancel</button>
+            <button class="rounded-md bg-[#8f4733] px-3 py-1.5 text-sm font-medium text-white">Save yarn</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- with server errors -->
+      <div class="rounded-lg border border-stone-200 bg-stone-50 p-6">
+        <div class="mx-auto max-w-md space-y-4">
+          <p class="screen-label">same form · server validation</p>
+
+          <div class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 text-sm">
+            <label class="block text-xs text-stone-500">Brand *
+              <input value="" class="mt-1 block w-full rounded-md border border-red-400 px-2 py-2 text-sm">
+              <span class="mt-1 block text-red-700">⚠ brand is required</span></label>
+            <label class="block text-xs text-stone-500">Colorway *
+              <input value="Mustard" class="mt-1 block w-full rounded-md border border-stone-300 px-2 py-2 text-sm text-stone-900"></label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block text-xs text-stone-500">Skeins *
+                <input value="-2" class="mt-1 block w-full rounded-md border border-red-400 px-2 py-2 text-sm">
+                <span class="mt-1 block text-red-700">⚠ skeins cannot be negative</span></label>
+              <label class="block text-xs text-stone-500">Yards per skein *
+                <input value="0" class="mt-1 block w-full rounded-md border border-red-400 px-2 py-2 text-sm">
+                <span class="mt-1 block text-red-700">⚠ must be at least 1</span></label>
+            </div>
+          </div>
+
+          <p class="text-xs text-stone-400">
+            Every message here is the backend’s own text, mapped by field name.
+            No validation rules duplicated in TypeScript.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ PROJECT LIST -->
+  <section class="space-y-4">
+    <p class="screen-label">Screen 4 — Projects · /projects</p>
+
+    <div class="rounded-lg border border-stone-200 bg-stone-50 p-6">
+      <div class="mx-auto max-w-5xl">
+
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Projects</h2>
+          <button class="rounded-md bg-[#8f4733] px-3 py-1.5 text-sm font-medium text-white">+ New project</button>
+        </div>
+
+        <div class="mb-5 flex flex-wrap gap-1.5 text-sm">
+          <button class="rounded-full bg-stone-900 px-3 py-1 text-white">All</button>
+          <button class="rounded-full border border-stone-300 bg-white px-3 py-1">Planned</button>
+          <button class="rounded-full border border-stone-300 bg-white px-3 py-1">In progress</button>
+          <button class="rounded-full border border-stone-300 bg-white px-3 py-1">Finished</button>
+          <button class="rounded-full border border-stone-300 bg-white px-3 py-1">Frogged</button>
+        </div>
+
+        <!-- cards: projects are identity, not comparison -->
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <a href="#" class="block rounded-lg border border-stone-200 bg-white p-4 hover:border-stone-300">
+            <span class="badge bg-[#8f4733]/12 text-[#8f4733]">In progress</span>
+            <p class="mt-2 font-medium">Winter Beanie</p>
+            <p class="text-xs text-stone-500">4.5 mm · started 10 Sep</p>
+            <p class="mt-2 text-xs text-stone-500">2 yarns · 240 yds</p>
+          </a>
+          <a href="#" class="block rounded-lg border border-stone-200 bg-white p-4 hover:border-stone-300">
+            <span class="badge bg-stone-200 text-stone-700">Finished</span>
+            <p class="mt-2 font-medium">Tarot Card Pouch</p>
+            <p class="text-xs text-stone-500">2.5 mm · 11–19 Jun</p>
+            <p class="mt-2 text-xs text-stone-500">1 yarn · 90 yds</p>
+          </a>
+          <a href="#" class="block rounded-lg border border-stone-200 bg-white p-4 hover:border-stone-300">
+            <span class="badge bg-stone-100 text-stone-600">Planned</span>
+            <p class="mt-2 font-medium">Ballet Wrap Cardigan</p>
+            <p class="text-xs text-stone-500">3.5 mm</p>
+            <p class="mt-2 text-xs text-stone-400">no yarn yet</p>
+          </a>
+          <a href="#" class="block rounded-lg border border-stone-200 bg-white p-4 opacity-70 hover:border-stone-300">
+            <span class="badge bg-stone-100 text-stone-400">Frogged</span>
+            <p class="mt-2 font-medium">Chunky Ribbed Scarf</p>
+            <p class="text-xs text-stone-500">8 mm · started 16 Apr</p>
+            <p class="mt-2 text-xs text-stone-500">yarn released back to stash</p>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ STATES -->
+  <section class="space-y-4">
+    <p class="screen-label">Screen 5 — Loading · empty · error (story 6.7)</p>
+
+    <div class="grid gap-4 lg:grid-cols-3">
+
+      <div class="rounded-lg border border-stone-200 bg-white p-4">
+        <p class="mb-3 text-xs font-semibold text-stone-500">Loading</p>
+        <div class="space-y-2">
+          <div class="h-9 animate-pulse rounded bg-stone-100"></div>
+          <div class="h-9 animate-pulse rounded bg-stone-100"></div>
+          <div class="h-9 animate-pulse rounded bg-stone-100"></div>
+          <div class="h-9 animate-pulse rounded bg-stone-100"></div>
+        </div>
+        <p class="mt-3 text-xs text-stone-400">
+          Skeletons at real row height, not a spinner — the page doesn’t jump when data lands.
+        </p>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 bg-white p-4">
+        <p class="mb-3 text-xs font-semibold text-stone-500">Empty</p>
+        <div class="rounded-md border border-dashed border-stone-300 px-4 py-10 text-center">
+          <p class="text-sm text-stone-600">Your stash is empty.</p>
+          <button class="mt-3 rounded-md bg-[#8f4733] px-3 py-1.5 text-sm font-medium text-white">+ Add your first yarn</button>
+        </div>
+        <p class="mt-3 text-xs text-stone-400">Empty always offers the next action.</p>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 bg-white p-4">
+        <p class="mb-3 text-xs font-semibold text-stone-500">Error</p>
+        <div class="rounded-md border border-red-200 bg-red-50 p-4">
+          <p class="text-sm font-medium text-red-800">Could not load the stash.</p>
+          <p class="mt-1 text-xs text-red-700">Failed to fetch — is the backend running?</p>
+          <button class="mt-3 rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700">Retry</button>
+        </div>
+        <p class="mt-3 text-xs text-stone-400">ApiError.message, plus a way out.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ 4.2 CHART -->
+  <section class="space-y-4">
+    <p class="screen-label">Later — story 4.2 · yardage by weight (backend not built yet)</p>
+
+    <div class="rounded-lg border border-stone-200 bg-white p-6">
+      <p class="mb-1 text-sm font-semibold">Stash by weight</p>
+      <p class="mb-5 text-xs text-stone-500">Total yards owned, by weight category</p>
+
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Lace</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:2px"></div><span class="text-xs tabular-nums text-stone-500">0</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Fingering</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:11%"></div><span class="text-xs tabular-nums text-stone-500">190</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Sport</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:2px"></div><span class="text-xs tabular-nums text-stone-500">0</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">DK</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:66%"></div><span class="text-xs tabular-nums text-stone-500">1,146</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Worsted</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:62%"></div><span class="text-xs tabular-nums text-stone-500">1,080</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Aran</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:19%"></div><span class="text-xs tabular-nums text-stone-500">328</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Chunky</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:44%"></div><span class="text-xs tabular-nums text-stone-500">765</span></div>
+        <div class="flex items-center gap-3"><span class="w-28 shrink-0 text-xs text-stone-500">Super chunky</span>
+          <div class="h-5 rounded-r bg-[#8a7358]" style="width:2px"></div><span class="text-xs tabular-nums text-stone-500">0</span></div>
+      </div>
+
+      <p class="mt-5 border-t border-stone-100 pt-3 text-xs text-stone-400">
+        Horizontal bars because the category names are long words. One series, so no
+        legend — the title names it. Values labelled directly. Categories stay in
+        weight order, never sorted by value, so the shape is comparable over time.
+      </p>
+    </div>
+  </section>
+
+  <footer class="border-t border-stone-200 pt-6 text-xs text-stone-400">
+    Yarnstash design reference · static mock-up, no JavaScript behaviour
+  </footer>
+
+</div>
+</body>
+</html>
